@@ -1,0 +1,23 @@
+body {
+	margin: 5%;
+}
+
+.category {
+	border-bottom: 1px solid gray;
+}
+
+.book {
+	margin-left: 5%;
+}
+
+.curr-scan {
+	margin: 10px 50px;
+	width: 400px;
+	height: 400px;
+}
+
+.scan-panel {
+	margin: auto;
+	width: 500px;
+	height: 500px;
+}
