@@ -19,8 +19,7 @@ Make sure VNC server is running, "Preferences->Raspberry pi configuration->Inter
 
 ## Start services on boot
 In /etc/rc.local, enter following lines above 
-
-==========
+```
 LOG=/home/pi/startup.log
 DJANGO_LOG=/home/pi/django.log
 
@@ -34,7 +33,7 @@ sudo service ssh start
 
 echo "Starting Django" >> $LOG
 python3 /home/pi/digilib/manage.py runserver 0.0.0.0:8000 > $DJANGO_LOG 2>&1 &
-==========
+```
 
 ## Set up django
 sudo ln -sf /home/pi/digilib/static /var/www/html/digilib
