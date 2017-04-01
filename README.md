@@ -4,6 +4,9 @@ git clone https://github.com/narsi84/digilib.git .
 
 sudo apt-get install apache2
 sudo apt-get install vim
+sudo apt-get install python-cffi
+sudo apt-get install libffi-dev
+
 
 sudo pip3 install Django
 sudo pip3 install djangorestframework
@@ -11,6 +14,7 @@ sudo pip3 install django-cors-headers
 sudo pip3 install markdown
 sudo pip3 install django-filter
 sudo pip install --upgrade django-crispy-forms
+sudo pip3 install -U pyOpenSSL
 ```
 
 
