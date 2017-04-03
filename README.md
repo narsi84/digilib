@@ -4,13 +4,18 @@ git clone https://github.com/narsi84/digilib.git digilib
 
 sudo apt-get install apache2
 sudo apt-get install vim
+sudo apt-get install python-cffi
+sudo apt-get install libffi-dev
+
 
 sudo pip3 install Django
 sudo pip3 install djangorestframework
 sudo pip3 install django-cors-headers
 sudo pip3 install markdown
 sudo pip3 install django-filter
-sudo pip install --upgrade django-crispy-forms
+sudo pip3 install --upgrade django-crispy-forms
+sudo pip3 install -U pyOpenSSL
+sudo pip3 install service_identity
 ```
 
 
@@ -38,6 +43,11 @@ python3 /home/pi/digilib/manage.py runserver 0.0.0.0:8000 > $DJANGO_LOG 2>&1 &
 ## Set up django
 ```
 sudo ln -sf /home/pi/digilib/static /var/www/html/digilib
+sudo mkdir /var/www/html/imgs
+sudo chown pi /var/www/html/imgs
+
+sudo mkdir /var/www/html/test
+sudo chown pi /var/www/html/test
 
 ## Set up opencv
 Follow instructions in http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/ to install opencv
