@@ -35,9 +35,13 @@ sudo service apache2 start >> $LOG 2>&1
 
 echo "Starting ssh" >> $LOG
 sudo service ssh start
+```
 
-echo "Starting Django" >> $LOG
-python3 /home/pi/digilib/manage.py runserver 0.0.0.0:8000 > $DJANGO_LOG 2>&1 &
+Since we are running with virtualenv, it cannot be loaded by boot. In /home/pi/.bashrc, add these lines at the end
+```
+echo "Starting Django" >> ~/startup.log
+source ~/venv/bin/activate
+~/digilib/manage.py runserver 0.0.0.0:8000 > ~/django.log 2>&1 &
 ```
 
 ## Set up django
@@ -48,10 +52,12 @@ sudo chown pi /var/www/html/imgs
 
 sudo mkdir /var/www/html/test
 sudo chown pi /var/www/html/test
+```
 
 ## Set up opencv
 Follow instructions in http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/ to install opencv
 
+```
 sudo reboot
 ```
 You should now be able to access http://raspberrypi/digilib from within your home network
