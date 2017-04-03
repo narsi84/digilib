@@ -12,10 +12,14 @@ class Category(models.Model):
 	def __str__(self):
 		return self.name
 
+class Author(models.Model):
+	name = models.CharField(max_length = 200, unique=True)
+
 class Book(models.Model):
 	created_time = models.DateTimeField('Created on', auto_now_add=True)
 	modified_time = models.DateTimeField('Modified on', auto_now=True)
-	name = models.CharField(max_length = 100)
+	name = models.CharField(max_length = 200)
+	author = models.ForeignKey(Author)
 	category = models.ForeignKey(Category)
 	tags = models.ManyToManyField(Tag, related_name='book', null=True)
 	def __str__(self):

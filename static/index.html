@@ -7,32 +7,74 @@
 	<body>
 		<div ng-controller="libraryController">
 		
-			<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#newbookModal">New book</button>
-			
+			<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#newbookModal">New book</button>			
+
+
 			<div class="modal fade" id="newbookModal">
 				<div class="modal-dialog">
 					<div class="modal-content">
 						<div class="modal-header">
-							<div class="col col-xs-6 col-xs-offset-3">
-								<form name="newbookform">
-									<input type="text" class="form-control" ng-required ng-maxlength="20" ng-minlength="5" placeholder="Enter book name" ng-model="newbookName"></text>							
-									<label for="category"></label>
-									<select class="form-control" name="category" ng-required ng-options="category as category.description.name for category in library" ng-model="newbookCategory">
-										<option></option>
-									</select>
+					        <button type="button" class="close" data-dismiss="modal">
+					        	<span>&times;</span>
+					        </button>
+					        <h4 class="modal-title">Book details</h4>
+				      	</div>						
+						<div class="modal-body">
+ 							<div uib-alert dismiss-on-timeout="2000" close="closeAlert()" class="alert alert-danger" ng-show="bookExists == true">Book "{{tmpbookName}}" already exists, choose another name</div>
+
+							<div id="bookdetailsform">
+								<form name="newbookform">														
+									<input type="text" class="form-control book-detail" required ng-maxlength="200" ng-minlength="5" placeholder="Enter book name" ng-model="newbookName"></text>							
+									<input type="text" class="form-control book-detail" required ng-maxlength="200" ng-minlength="5" placeholder="Enter author" ng-model="newbookAuthor"></text>	
+
+									<input type="text" class="form-control book-detail" required max-length="200" ng-minlength="5" placeholder="Enter category or choose from list" ng-model="newbookCategory" list="categories">
+									<datalist id="categories">
+										<option ng-repeat="category in library">
+											{{category.description.name}}
+										</option>
+									</datalist>
+									
+									<div class="row">
+										<div class="col col-xs-offset-3"> 
+											<button class="btn btn-success col col-xs-6" ng-disabled="newbookform.$invalid" type="submit" ng-click="createBook()">Create book</button>
+										</div>
+									</div>
 								</form>
 							</div>
+ 
 						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="modal fade" id="scanModal" data-backdrop='static' data-keyboard='false'>
+				<div class="modal-dialog">
+					<div class="modal-content">
 						<div class="modal-body">
 							<div class="scan-panel">
-								<button class="btn btn-success col col-xs-4 col-xs-offset-4" ng-click="scan()" ng-disabled="newbookform.$invalid">Scan</button>
-								<div>
-									<img ng-src="{{currentScan}}" class="curr-scan" ng-hide="firstScan">
+								<div class="action-panel">
+									<button type="button" class="btn btn-success action action-test" ng-click="selectAction(actions.test);" ng-disabled="actions.auto.active" ng-class="{'active': actions.test.active}">
+										<span class="action-icon glyphicon {{actions.test.icon}}"></span>{{actions.test.label}}
+									</button>	
+
+									<div class="btn-group action-scan-group">
+										<button type="button" class="btn btn-success action" ng-click="selectAction(actions.single);" ng-disabled="actions.test.active">
+											<span class="action-icon glyphicon {{actions.single.icon}}"></span>{{actions.single.label}}
+										</button>	
+										<button type="button" class="btn btn-success action" ng-click="selectAction(actions.auto);" ng-disabled="actions.test.active" ng-class="{'active': actions.auto.active}">
+											<span class="action-icon glyphicon {{actions.auto.icon}}"></span>{{actions.auto.label}}
+										</button>											
+									</div>
+
+									<button type="button" class="btn btn-success action action-finish" ng-click="selectAction(actions.finish);" ng-class="{'active': actions.finish.active}">
+										<span class="action-icon glyphicon {{actions.finish.icon}}"></span>{{actions.finish.label}}
+									</button>	
+								</div>
+								<div>		
+									<span class="scannum"># {{currentScan.scanNum}}</span>							
+									<img ng-src="{{currentScan.loc}}" class="curr-scan">
 								</div>
 							</div>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="finishBook()">Finish</button>
 						</div>
 					</div>
 				</div>
@@ -43,7 +85,7 @@
 				</div>
 				<div ng-repeat="book in category.books">
 					<div class="book">
-						<h4>{{book.name}}</h4>
+						<h4>{{book.name}} <span class="author">{{book.author.name }}</span> </h4>
 					</div>
 				</div>
 			</div>	

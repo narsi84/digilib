@@ -19,6 +19,7 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = '__all__'
+        depth = 1
 
 class TagSerializer(serializers.ModelSerializer):
 #class TagSerializer(serializers.HyperlinkedModelSerializer):

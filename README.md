@@ -1,6 +1,6 @@
 # Installation
 ```
-git clone https://github.com/narsi84/digilib.git .
+git clone https://github.com/narsi84/digilib.git digilib
 
 sudo apt-get install apache2
 sudo apt-get install vim
@@ -38,6 +38,9 @@ python3 /home/pi/digilib/manage.py runserver 0.0.0.0:8000 > $DJANGO_LOG 2>&1 &
 ## Set up django
 ```
 sudo ln -sf /home/pi/digilib/static /var/www/html/digilib
+
+## Set up opencv
+Follow instructions in http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/ to install opencv
 
 sudo reboot
 ```
