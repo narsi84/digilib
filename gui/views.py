@@ -3,7 +3,6 @@ from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from .serializers import *
 from .models import *
-from picamera import PiCamera 
 from django.http import HttpResponse
 from django.http.response import HttpResponseBadRequest
 import json 
@@ -13,16 +12,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django_filters import rest_framework as filters
 import uuid
 
+from threading import Thread
+
 from channels.handler import AsgiHandler
 
-camera = None
-img_dir = '/var/www/html/imgs'
-pgno = 0
-started = False
-currbookid = -1
-currbook = None
+from .scanner import Scanner, ScanModes
 
-TMPDIR = '/var/www/html/test'
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -59,6 +54,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
 	serializer_class = CategorySerializer
 	filter_fields = ['name']
 
+def autoScanWorker():
+
+class AutoScanner(Thread):
+	def s
+
 @csrf_exempt
 def createBook(request):
 	payload = json.loads(request.body.decode('utf-8'))
@@ -81,48 +81,44 @@ def createBook(request):
 
 @csrf_exempt
 def startBook(request):
-	global started, currbookid, pgno, camera, currbook
+	scanner = Scanner.get_instance()
 
 	payload = json.loads(request.body.decode('utf-8'))
 	bookid = payload['bookid']
-	
-	if not camera or camera.closed:
-		camera = PiCamera()
-	
-	if bookid is None:
+		
+	if scanner.bookid is None:
 		return HttpResponseBadRequest('Invalid bookid')
 	
-	bookdir = img_dir + '/' + str(bookid)
+	bookdir = scanner.img_dir + '/' + str(bookid)
 	if not os.path.exists(bookdir):		
 		os.makedirs(bookdir)
 	
 	lastscan = Scan.objects.filter(book__id = bookid).order_by('-page').first()	
 	pgno = lastscan.page + 1 if lastscan else 1
 
-	started = True
-	currbookid = bookid
-	currbook = Book.objects.get(pk = currbookid)
-	return HttpResponse('Started scanning book ' + currbook.name)
+	scanner.started = True
+	scanner.currbookid = bookid
+	scanner.currbook = Book.objects.get(pk = currbookid)
+	return HttpResponse('Started scanning book ' + scanner.currbook.name)
 	
 @csrf_exempt	
 def stopBook(request):
-	global started, currbookid, pgno, camera, currbook
-
-	print(currbookid)
+	scanner = Scanner.get_instance()
+	print(scanner.currbookid)
 	payload = json.loads(request.body.decode('utf-8'))
 	bookid = payload['bookid']
-	if bookid != currbookid:
+	if bookid != scanner.currbookid:
 		return HttpResponseBadRequest("Inconsistent bookids. Call /stopBook to flush previous session")
 
-	started = False
-	currbookid = -1
-	camera.close()
-	return HttpResponse('Stopped scanning book ' + currbook.name)
+	scanner.started = False
+	scanner.currbookid = -1
+	return HttpResponse('Stopped scanning book ' + scanner.currbook.name)
 
 
 @csrf_exempt	
 def scan(request):	
-	global started, currbookid, pgno, camera, currbook
+	scanner = Scanner.get_instance()
+	scanner.mode = ScanModes.SINGLE_SCAN
 
 	payload = json.loads(request.body.decode('utf-8'))
 	bookid = payload['bookid']
@@ -130,36 +126,47 @@ def scan(request):
 	if bookid < 1:
 		return HttpResponse("Invalid bookid")
 		
-	if bookid != currbookid:
+	if bookid != scanner.currbookid:
 		return HttpResponse("Inconsistent bookids. Call /stopBook to flush previous session")
-		
-	bookdir = img_dir + '/' + str(bookid)
-	scanfile = '%s/%d.jpg' % (bookdir, pgno)
-	camera.capture(scanfile, format='jpeg')
-	scan = Scan(page=pgno, loc=scanfile, book=currbook)
-	scan.save()
-	pgno += 1 
 
-	imgloc = "../imgs/{bookid}/{scan_num}.jpg".format(bookid=bookid, scan_num=pgno-1)
-	response = {'loc': imgloc, 'scanNum': pgno-1}
+	scanfile, pgno = scanner.scan()
+	scan = Scan(page=pgno, loc=scanfile, book=scanner.currbook)
+	scan.save()
+
+	imgloc = os.path.join('../imgs/', scanfile)
+	response = {'loc': imgloc, 'scanNum': pgno}
 	return HttpResponse(json.dumps(response))
+
 
 @csrf_exempt
 def test(request):
-	global TMPDIR, camera
+	scanner = Scanner.get_instance()
+	scanner.mode = ScanModes.TEST
 
-	if camera is None or camera.closed:
-		camera = PiCamera()
+	scanfile, _ = scanner.scan()
+	return HttpResponse('{"loc": "../test/%s"}' % (scanfile))
 
-	randid = uuid.uuid4()
-	scanfile = '%s/%s.jpg' % (TMPDIR, randid)
-	camera.capture(scanfile, format='jpeg')
-	return HttpResponse('{"loc": "../test/%s.jpg"}' % (randid))
+
+@csrf_exempt
+def auto_scan(request):
+	scanner = Scanner.get_instance()
+
+	payload = json.loads(request.body.decode('utf-8'))
+	bookid = payload['bookid']
+	state = payload['state']
+
+	if state == True:
+		scanner.set_mode(ScanModes.AUTO_SCAN)
+	else:
+		scanner.set_mode(ScanModes.NONE)
+
 
 def ws_message(message):
+	global reply_channel
 
+	reply_channel = message.reply_channel
 	print(message.content);
-    # message.reply_channel.send({
-    #     "text": message.content['text'],
-    # })
+	# message.reply_channel.send({
+	#     "text": message.content['text'],
+	# })
 

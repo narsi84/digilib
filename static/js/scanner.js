@@ -94,7 +94,11 @@
 		}
 
 		$scope.autoScan = function(){
-			$scope.socket.send(JSON.stringify({msg: "begin_auto"}));
+			$http.post(API_URL + 'autoScan', {'bookid': $scope.currentBookId})
+				.then(function(response){
+					console.log(response.data);
+				})
+			// $scope.socket.send(JSON.stringify({msg: "begin_auto"}));
 		}
 				
 		$scope.finishBook = function(){
