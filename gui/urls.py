@@ -19,5 +19,6 @@ urlpatterns = [
     url(r'^api/v1/startBook', views.startBook, name='startBook'),
     url(r'^api/v1/stopBook', views.stopBook, name='stopBook'),
     url(r'^api/v1/test', views.test, name='test'),
+    url(r'^api/v1/autoScan', views.auto_scan, name='auto_scan'),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

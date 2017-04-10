@@ -54,11 +54,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
 	serializer_class = CategorySerializer
 	filter_fields = ['name']
 
-def autoScanWorker():
-
-class AutoScanner(Thread):
-	def s
-
 @csrf_exempt
 def createBook(request):
 	payload = json.loads(request.body.decode('utf-8'))
@@ -77,6 +72,8 @@ def createBook(request):
 
 	book = Book(name=book_name, author=author, category=category)
 	book.save()
+
+
 	return HttpResponse(json.dumps({'bookid': book.id}))
 
 @csrf_exempt
@@ -86,19 +83,16 @@ def startBook(request):
 	payload = json.loads(request.body.decode('utf-8'))
 	bookid = payload['bookid']
 		
-	if scanner.bookid is None:
-		return HttpResponseBadRequest('Invalid bookid')
-	
 	bookdir = scanner.img_dir + '/' + str(bookid)
 	if not os.path.exists(bookdir):		
 		os.makedirs(bookdir)
 	
 	lastscan = Scan.objects.filter(book__id = bookid).order_by('-page').first()	
-	pgno = lastscan.page + 1 if lastscan else 1
+	scanner.pgno = lastscan.page + 1 if lastscan else 1
 
 	scanner.started = True
 	scanner.currbookid = bookid
-	scanner.currbook = Book.objects.get(pk = currbookid)
+	scanner.currbook = Book.objects.get(pk = bookid)
 	return HttpResponse('Started scanning book ' + scanner.currbook.name)
 	
 @csrf_exempt	
@@ -152,19 +146,18 @@ def auto_scan(request):
 	scanner = Scanner.get_instance()
 
 	payload = json.loads(request.body.decode('utf-8'))
+	print(payload)
 	bookid = payload['bookid']
 	state = payload['state']
 
 	if state == True:
-		scanner.set_mode(ScanModes.AUTO_SCAN)
+		scanner.mode = ScanModes.AUTO_SCAN
 	else:
-		scanner.set_mode(ScanModes.NONE)
-
+		scanner.mode = ScanModes.NONE
+	return HttpResponse(json.dumps({'scan_mode': scanner.mode}))
 
 def ws_message(message):
-	global reply_channel
-
-	reply_channel = message.reply_channel
+	Scanner.get_instance().msg_channel = message.reply_channel
 	print(message.content);
 	# message.reply_channel.send({
 	#     "text": message.content['text'],

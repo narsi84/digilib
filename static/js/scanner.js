@@ -93,8 +93,8 @@
 				})
 		}
 
-		$scope.autoScan = function(){
-			$http.post(API_URL + 'autoScan', {'bookid': $scope.currentBookId})
+		$scope.autoScan = function(isactive){
+			$http.post(API_URL + 'autoScan', {'bookid': $scope.currentBookId, 'state': isactive})
 				.then(function(response){
 					console.log(response.data);
 				})
@@ -131,12 +131,14 @@
 				}
 			})
 
-			curr_action.method();
+			curr_action.method(curr_action.active);
 		}
 
 		$scope.socket.onmessage = function(e) {
 			var data = JSON.parse(e.data)
-			$scope.currentScan = data.url;
+			$scope.$apply(function(){
+				$scope.currentScan = data;
+			})
 		}
 
 		$scope.socket.onopen = function() {
